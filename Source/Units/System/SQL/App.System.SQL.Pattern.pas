@@ -122,7 +122,7 @@ implementation
 
 { TSystemSQLPatternDB }
 
-uses App.DataBase.Consts;
+uses App.DataBase.Consts, App.System.Vars;
 
 class function TSystemSQLPatternDB.CreateDataBase(const ADataBaseName: UnicodeString): UnicodeString;
 begin
@@ -165,9 +165,9 @@ class function TSystemSQLPatternDB.DataBaseOnSchemaPostGres: UnicodeString;
 begin
    Result := 'SELECT PD.DATNAME, PU.USENAME' + sLineBreak +
              '  FROM PG_DATABASE PD, PG_USER PU' + sLineBreak +
-             'WHERE PU.USESYSID = PD.DATDBA' + sLineBreak;
-//             '  AND PU.USENAME = ' + QuotedStr(cPGUserName) + sLineBreak +
-//             '  AND PD.DATNAME = ' + QuotedStr(gvSettingsFile.Connection.DataBaseName) + ';';
+             'WHERE PU.USESYSID = PD.DATDBA' + sLineBreak +
+             '  AND PU.USENAME = ' + QuotedStr('postgres') + sLineBreak +
+             '  AND PD.DATNAME = ' + QuotedStr(gvSettings.Connection.DataBaseName) + ';';
 end;
 
 class function TSystemSQLPatternDB.DropField(const ATableName, AFieldName: UnicodeString): UnicodeString;

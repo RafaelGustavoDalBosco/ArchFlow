@@ -7,7 +7,8 @@ uses
    App.DataBase.Utils, System.SysUtils,
    App.Objects.Entity.Default,
    App.System.ORM.CustomAttributes,
-   App.System.ORM.InspectAttributes, App.System.ORM.Utils;
+   App.System.ORM.InspectAttributes,
+   App.System.ORM.Utils;
 
 type
 

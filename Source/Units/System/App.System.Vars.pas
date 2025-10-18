@@ -4,7 +4,8 @@ interface
 
 uses
    App.System.Connection,
-   App.Objects.Common;
+   App.Objects.Common,
+   App.System.Types;
 
 var
    /// <summary>
@@ -13,16 +14,24 @@ var
    gvConnection: TConnection;
 
    /// <summary>
-   ///    Global.Variable = TraceDebug | Usado para monitorar os métodos executados
+   ///    Global.Variable = TTypeConnection | tipo da conexão (Local ou remoto)
    /// </summary>
-   gvTraceDebug: Boolean;
+   gvTypeConnection: TTypeConnection;
 
    /// <summary>
    ///    Global.Variable = TApplicationDiorectorys | diretórios da aplicação
    /// </summary>
    gvDirectories: TApplicationDirectorys;
 
+   /// <summary>
+   ///    Global.Variable = TApplicationSettings | configurações do arquivo settings
+   /// </summary>
+   gvSettings: TApplicationSettings;
+
+   /// <summary>
+   ///    Global.Variable = TApplicationFiles | caminho dos arquivos da aplicação
+   /// </summary>
+   gvFiles: TApplicationFiles;
+
 implementation
-
-
 end.

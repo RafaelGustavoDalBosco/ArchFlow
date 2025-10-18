@@ -66,6 +66,7 @@ type
       ///    TQuery<System.Query> que está cuidando da conexão
       /// </param>
       constructor Create(const AObject: TObject; const ARttiProperty: TRttiProperty; const AFieldName: UnicodeString; const AQuery: TQuery); overload;
+      destructor Destroy; override;
    end;
 
    TExtractParamToQuery = class(TExtractCommon)
@@ -204,57 +205,57 @@ type
       /// <summary>
       ///    Extract.Property.Currency
       /// </summary>
-      procedure FieldPropertyCurrency;
+      procedure FieldProperty_Currency;
 
       /// <summary>
       ///    Extract.Property.String
       /// </summary>
-      procedure FieldPropertyString;
+      procedure FieldProperty_String;
 
       /// <summary>
       ///    Extract.Property.Integer
       /// </summary>
-      procedure FieldPropertyInteger;
+      procedure FieldProperty_Integer;
 
       /// <summary>
       ///    Extract.Property.Int64
       /// </summary>
-      procedure FieldPropertyInt64;
+      procedure FieldProperty_Int64;
 
       /// <summary>
       ///    Extract.Property.SmallInt
       /// </summary>
-      procedure FieldPropertySmallInt;
+      procedure FieldProperty_SmallInt;
 
       /// <summary>
       ///    Extract.Property.ShortInt
       /// </summary>
-      procedure FieldPropertyShortInt;
+      procedure FieldProperty_ShortInt;
 
       /// <summary>
       ///    Extract.Property.Bytea
       /// </summary>
-      procedure FieldPropertyBytea;
+      procedure FieldProperty_Bytea;
 
       /// <summary>
       ///    Extract.Property.Date
       /// </summary>
-      procedure FieldPropertyDate;
+      procedure FieldProperty_Date;
 
       /// <summary>
       ///    Extract.Property.DateTime
       /// </summary>
-      procedure FieldPropertyDateTime;
+      procedure FieldProperty_DateTime;
 
       /// <summary>
       ///    Extract.Property.Time
       /// </summary>
-      procedure FieldPropertyTime;
+      procedure FieldProperty_Time;
 
       /// <summary>
       ///    Extract.Property.Boolean
       /// </summary>
-      procedure FieldPropertyBoolean;
+      procedure FieldProperty_Boolean;
    public
       /// <summary>
       ///    Extract.Property = [TDataBaseField]
@@ -362,7 +363,7 @@ type
       /// <summary>
       ///    Extract [AccessControl]
       /// </summary>
-      function Extract_AcessControl: Boolean;
+      function Extract_AccessControl: Boolean;
 
       /// <summary>
       ///    Extract [DataBaseRecord]
@@ -448,7 +449,8 @@ implementation
 
 { TExtract }
 
-uses App.Common.Utils, App.System.Consts, App.System.ORM.Persistent;
+uses App.Common.Utils, App.System.Consts, App.System.ORM.Persistent,
+  App.Common.Vars;
 
 constructor TExtract.Create(const AObject: TObject);
 begin
@@ -458,7 +460,7 @@ begin
    inherited Create;
 end;
 
-function TExtract.Extract_AcessControl: Boolean;
+function TExtract.Extract_AccessControl: Boolean;
 var
    LProperties: TObjectProperties;
 begin
@@ -634,7 +636,7 @@ begin
    begin
       for LProperty in FRttiType.GetProperties do
       begin
-         LExtract := TExtractFieldToQuery.Create(FObject, LProperty, LField.Name, AQuery);
+         LExtract := TExtractFieldToQuery.Create(FObject, LProperty, LField.FieldName, AQuery);
          try
             LExtract.Extract;
          finally
@@ -662,7 +664,7 @@ begin
             begin
                TEntityRoot(AObject).OwnerId := AOwnerId;
                TEntityRoot(AObject).OwnerType := Ord(AOwnerType);
-               TEntityRoot(AObject).IdEmpresa := 1;
+               TEntityRoot(AObject).IdEmpresa := gvEmpresa.Id;
             end
             else
                ExtractAndSetField_Bound(AObject, AOwnerId);
@@ -700,7 +702,7 @@ begin
             begin
                TEntityRoot(LNewObject).OwnerId := AOwnerId;
                TEntityRoot(LNewObject).OwnerType := Ord(AOwnerType);
-               TEntityRoot(LNewObject).IdEmpresa := 1;
+               TEntityRoot(LNewObject).IdEmpresa := gvEmpresa.Id;
             end
             else
                ExtractAndSetField_Bound(LNewObject, AOwnerId);
@@ -918,7 +920,7 @@ begin
       Result.HasList := Extract_HasList;
       Result.HasObject := Extract_HasObject;
       Result.OwnerType := Extract_OwnerType;
-      Result.AccessControl := Extract_AcessControl;
+      Result.AccessControl := Extract_AccessControl;
    end;
 end;
 
@@ -962,20 +964,20 @@ end;
 
 procedure TExtractDataBaseField.Extract;
 begin
-   FieldPropertyCurrency;
-   FieldPropertyString;
-   FieldPropertyInteger;
-   FieldPropertyInt64;
-   FieldPropertySmallInt;
-   FieldPropertyShortInt;
-   FieldPropertyBytea;
-   FieldPropertyDate;
-   FieldPropertyDateTime;
-   FieldPropertyTime;
-   FieldPropertyBoolean;
+   FieldProperty_Currency;
+   FieldProperty_String;
+   FieldProperty_Integer;
+   FieldProperty_Int64;
+   FieldProperty_SmallInt;
+   FieldProperty_ShortInt;
+   FieldProperty_Bytea;
+   FieldProperty_Date;
+   FieldProperty_DateTime;
+   FieldProperty_Time;
+   FieldProperty_Boolean;
 end;
 
-procedure TExtractDataBaseField.FieldPropertyBoolean;
+procedure TExtractDataBaseField.FieldProperty_Boolean;
 var
    LAttribute: TFieldBoolean;
 begin
@@ -985,7 +987,7 @@ begin
       FDataBaseField.TypeText := 'boolean';
 end;
 
-procedure TExtractDataBaseField.FieldPropertyBytea;
+procedure TExtractDataBaseField.FieldProperty_Bytea;
 var
    LAttribute: TFieldBytea;
 begin
@@ -995,7 +997,7 @@ begin
       FDataBaseField.TypeText := 'bytea';
 end;
 
-procedure TExtractDataBaseField.FieldPropertyCurrency;
+procedure TExtractDataBaseField.FieldProperty_Currency;
 var
    LAttribute: TFieldCurrency;
 begin
@@ -1009,7 +1011,7 @@ begin
    end;
 end;
 
-procedure TExtractDataBaseField.FieldPropertyDate;
+procedure TExtractDataBaseField.FieldProperty_Date;
 var
    LAttribute: TFieldDate;
 begin
@@ -1019,7 +1021,7 @@ begin
       FDataBaseField.TypeText := 'date';
 end;
 
-procedure TExtractDataBaseField.FieldPropertyDateTime;
+procedure TExtractDataBaseField.FieldProperty_DateTime;
 var
    LAttribute: TFieldDateTime;
 begin
@@ -1029,7 +1031,7 @@ begin
       FDataBaseField.TypeText := 'timestamp without time zone';
 end;
 
-procedure TExtractDataBaseField.FieldPropertyInt64;
+procedure TExtractDataBaseField.FieldProperty_Int64;
 var
    LAttribute: TFieldInt64;
 begin
@@ -1039,7 +1041,7 @@ begin
       FDataBaseField.TypeText := 'bigint';
 end;
 
-procedure TExtractDataBaseField.FieldPropertyInteger;
+procedure TExtractDataBaseField.FieldProperty_Integer;
 var
    LAttribute: TFieldInteger;
 begin
@@ -1049,7 +1051,7 @@ begin
       FDataBaseField.TypeText := 'integer';
 end;
 
-procedure TExtractDataBaseField.FieldPropertyShortInt;
+procedure TExtractDataBaseField.FieldProperty_ShortInt;
 var
    LAttribute: TFieldShortInt;
 begin
@@ -1059,7 +1061,7 @@ begin
       FDataBaseField.TypeText := 'smallint';
 end;
 
-procedure TExtractDataBaseField.FieldPropertySmallInt;
+procedure TExtractDataBaseField.FieldProperty_SmallInt;
 var
    LAttribute: TFieldSmallInt;
 begin
@@ -1069,7 +1071,7 @@ begin
       FDataBaseField.TypeText := 'smallint';
 end;
 
-procedure TExtractDataBaseField.FieldPropertyString;
+procedure TExtractDataBaseField.FieldProperty_String;
 var
    LAttribute: TFieldString;
 begin
@@ -1082,7 +1084,7 @@ begin
    end;
 end;
 
-procedure TExtractDataBaseField.FieldPropertyTime;
+procedure TExtractDataBaseField.FieldProperty_Time;
 var
    LAttribute: TFieldTime;
 begin
@@ -1095,18 +1097,25 @@ end;
 { TExtractFieldToQuery }
 
 procedure TExtractFieldToQuery.Extract;
+var
+   LField: TField;
 begin
-   ExtractField_Int64;
-   ExtractField_Integer;
-   ExtractField_SmallInt;
-   ExtractField_ShortInt;
-   ExtractField_Currency;
-   ExtractField_String;
-   ExtractField_Date;
-   ExtractField_DateTime;
-   ExtractField_Time;
-   ExtractField_Boolean;
-   ExtractField_Bytea;
+   LField := FInspect.GetAttribute_Field;
+
+   if (LField <> nil) and (LField.Name = FFieldName) then
+   begin
+      ExtractField_Int64;
+      ExtractField_Integer;
+      ExtractField_SmallInt;
+      ExtractField_ShortInt;
+      ExtractField_Currency;
+      ExtractField_String;
+      ExtractField_Date;
+      ExtractField_DateTime;
+      ExtractField_Time;
+      ExtractField_Boolean;
+      ExtractField_Bytea;
+   end;
 end;
 
 procedure TExtractFieldToQuery.ExtractField_Boolean;
@@ -1499,6 +1508,12 @@ begin
    FQuery := AQuery;
    FInspect := TInspectAttributes.Create(FProperty);
    inherited Create;
+end;
+
+destructor TExtractCommon.Destroy;
+begin
+   ObjUtils.Release_(FInspect);
+   inherited Destroy;
 end;
 
 procedure TExtractCommon.ExceptionRangeValueProperty(const AMinValue, AMaxValue, AActualValue, APropertyName: UnicodeString);

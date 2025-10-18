@@ -230,7 +230,7 @@ end;
 
 function TInspectAttributes.GetAttribute_Properties: TObjectProperties;
 begin
-   Result := GetPropertyAttribute(TObjectProperties) as TObjectProperties;
+   Result := GetClassAttribute(TObjectProperties) as TObjectProperties;
 end;
 
 function TInspectAttributes.GetAttribute_ShortInt: TFieldShortInt;

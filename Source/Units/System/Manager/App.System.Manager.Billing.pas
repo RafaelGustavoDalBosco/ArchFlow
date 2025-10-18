@@ -6,37 +6,30 @@ uses
 
 {$REGION '| USES |'}
    System.SysUtils, System.JSON, System.JSON.Types, App.Common.Utils,
-   App.System.Controller.AmazonCloud,
    App.Common.Consts,
    System.Classes,
    System.JSON.Readers,
    App.Objects.Entity.Empresa,
-   App.Objects.Entity.Default;
+   App.Objects.Entity.Default, App.Controller.AmazonCloud.S3,
+   App.Objects.Entity.ApplicationData, App.System.ORM.Utils, App.System.Consts,
+  App.Objects.Common;
 {$ENDREGION}
 
 type
 
    TManagerBilling = class
    private
-      FEmpresa: TEmpresa;
+      FCNPJ: UnicodeString;
    strict protected
       /// <summary>
-      ///    ProcessFileFromAWS<JSON>
+      ///   Atualiza a data de expiração na tabela TAPPLICATION_DATA
       /// </summary>
-      procedure ProcessFileFromAWS;
-
-      /// <summary>
-      ///    UpdateCompanyExpirationDate<Date>
-      /// </summary>
+      /// <param name="ADate">
+      ///    Data que será atualizada
+      /// </param>
       procedure UpdateExpirationDate(const ADate: TDate);
-
       /// <summary>
-      ///    GetContentFromFile<JSON>
-      /// </summary>
-      function GetContentFileFromAWS: UnicodeString;
-
-      /// <summary>
-      ///    CheckAndRaiseIfExpired<Date>
+      ///    Se a data de expiração é menor que a atual, então raise exception
       /// </summary>
       function CheckAndRaiseIfExpired(const ADate: TDate): Boolean;
 
@@ -50,11 +43,17 @@ type
       /// </summary>
       function Execute: Boolean;
 
-      constructor Create(const AIdEmpresa: Int64); overload;
+      /// <param name="ACNPJ">
+      ///    Executa o manager de acordo com a empresa [CNPJ]
+      /// </param>
+      constructor Create(const ACNPJ: UnicodeString); overload;
       destructor Destroy; override;
    end;
 
 implementation
+
+uses
+    App.System.Manager.Company.Cloud;
 
 { TManagerBilling }
 
@@ -68,105 +67,73 @@ end;
 
 function TManagerBilling.CheckOnDataBase: Boolean;
 var
-   LApplication: TApplicationInformation;
+   LApplication: TApplicationData;
 begin
-   LApplication := AppPersistent.SelectAndCreateNewObject(TApplicationInformation, 1) as TApplicationInformation;
+   LApplication := TApplicationData.Create;
+   try
+      LApplication.Id := 1; // always 1
 
-   if (LApplication <> nil) then
-   begin
-      Result := (LApplication.ExpirationDate >= Now);
+      if ORMUtils.Select_Record(LApplication) then
+         Exit(LApplication.ExpirationDate >= Now)
+      else
+         Result := False;
+   finally
       FreeAndNil(LApplication);
-   end
-   else
-      Result := False;
+   end;
 end;
 
-constructor TManagerBilling.Create(const AIdEmpresa: Int64);
+constructor TManagerBilling.Create(const ACNPJ: UnicodeString);
 begin
-   FEmpresa := AppPersistent.SelectAndCreateNewObject(TEmpresa, AIdEmpresa) as TEmpresa;
+   FCNPJ := ACNPJ;
    inherited Create;
 end;
 
 destructor TManagerBilling.Destroy;
 begin
-   AppObject.CheckAndFreeObject(FEmpresa);
    inherited Destroy;
 end;
 
 function TManagerBilling.Execute: Boolean;
+var
+   LCompanyCloud: TCompanyCloud;
+   LManager: TManagerCompanyCloud;
 begin
    Result := True;
 
    if (not CheckOnDataBase) then
-      ProcessFileFromAWS;
-end;
+   begin
+      LManager := TManagerCompanyCloud.Create(FCNPJ);
+      try
+         LCompanyCloud := LManager.Get_Company_Cloud;
 
-function TManagerBilling.GetContentFileFromAWS: UnicodeString;
-var
-   LController: TAmazonS3Controller;
-begin
-   AppWatcher.ShowAWS('Obtendo validação financeira na Nuvem {AWS}...');
-   LController := TAmazonS3Controller.Create;
-   try
-      Result := LController.TryGetFileDataToString(SNameFileClientValidations, SNameBucketClientValidations);
-   finally
-      FreeAndNil(LController);
-      AppWatcher.Close;
-   end;
-end;
-
-procedure TManagerBilling.ProcessFileFromAWS;
-var
-   LContent: UnicodeString;
-   LStringReader: TStringReader;
-   LJSONReader: TJsonTextReader;
-   LCpfCnpj: UnicodeString;
-   LDataExpired: TDate;
-   LFound: Boolean;
-begin
-   LContent := GetContentFileFromAWS;
-
-   LStringReader := TStringReader.Create(LContent);
-   LJSONReader := TJsonTextReader.Create(LStringReader);
-   try
-      LFound := False;
-
-      while LJSONReader.Read do
-      begin
-         if (LJSONReader.TokenType = TJsonToken.PropertyName) then
+         if (LCompanyCloud <> nil) then
          begin
-            LCpfCnpj := AppJSON.TryGetValueStringFromPath(LJSONReader, 'cpfcnpj');
-
-            if LCpfCnpj.Equals(FEmpresa.CpfCnpj) then
-            begin
-               LFound := True;
-
-               LDataExpired := AppJSON.TryGetValueDateFromPath(LJSONReader, 'data');
-
-               if CheckAndRaiseIfExpired(LDataExpired) then
-                  UpdateExpirationDate(LDataExpired);
-            end;
+            if CheckAndRaiseIfExpired(LCompanyCloud.Expiration_Date) then
+               UpdateExpirationDate(LCompanyCloud.Expiration_Date);
          end;
+      finally
+         FreeAndNil(LManager);
       end;
-
-      if (not LFound) then
-         raise Exception.Create('Não foi encontrado uma licença válida para o CNPJ!');
-   finally
-      FreeAndNil(LJSONReader);
-      FreeAndNil(LStringReader);
    end;
 end;
 
 procedure TManagerBilling.UpdateExpirationDate(const ADate: TDate);
 var
-   LApplication: TApplicationInformation;
+   LApplication: TApplicationData;
 begin
-   LApplication := AppPersistent.SelectAndCreateNewObject(TApplicationInformation, 1) as TApplicationInformation;
+   LApplication := TApplicationData.Create;
+   try
+      LApplication.Id := 1; // always 1
 
-   if (LApplication <> nil) and (LApplication.ExpirationDate <> ADate) then
-   begin
-      LApplication.ExpirationDate := ADate;
-      AppPersistent.Update(LApplication);
+      if ORMUtils.Select_Record(LApplication) then
+      begin
+         if (LApplication.ExpirationDate <> ADate) then
+         begin
+            LApplication.ExpirationDate := ADate;
+            ORMUtils.Edit_Record(LApplication);
+         end;
+      end;
+   finally
       FreeAndNil(LApplication);
    end;
 end;

@@ -3,8 +3,7 @@ unit App.Objects.Entity.Empresa;
 interface
 
 uses
-   App.Objects.Entity.Default, System.SysUtils, System.Classes, App.System.ORM.CustomAttributes,
-   App.DataBase.Consts;
+   App.Objects.Entity.Default, System.SysUtils, System.Classes, App.System.ORM.CustomAttributes, App.DataBase.Consts;
 
 type
 

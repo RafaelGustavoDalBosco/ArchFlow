@@ -1,8 +1,10 @@
 program ArchFlow;
 
 uses
+  {$REGION}
   Vcl.Forms,
-  Frm.System.Ancestral in '..\Source\Forms\System\Frm.System.Ancestral.pas' {FrmSystemAncestral},
+  Windows,
+  SysUtils,
   Frm.System.Component.Assistance in '..\Source\Forms\System\Frm.System.Component.Assistance.pas' {FrmSystemComponentAssistance},
   App.System.Types in '..\Source\Units\System\App.System.Types.pas',
   App.Common.Utils in '..\Source\Units\Common\App.Common.Utils.pas',
@@ -37,14 +39,94 @@ uses
   App.Controller.Usuario.Access in '..\Source\Units\Controller\App.Controller.Usuario.Access.pas',
   App.System.ORM.Utils in '..\Source\Units\System\ORM\App.System.ORM.Utils.pas',
   App.System.Manager.Billing in '..\Source\Units\System\Manager\App.System.Manager.Billing.pas',
-  App.Controller.AmazonCloud in '..\Source\Units\Controller\App.Controller.AmazonCloud.pas';
+  App.Controller.AmazonCloud.S3 in '..\Source\Units\Controller\App.Controller.AmazonCloud.S3.pas',
+  App.Controller.Engage in '..\Source\Units\Controller\App.Controller.Engage.pas',
+  Frm.System.Ancestral in '..\Source\Forms\System\Ancestral\Frm.System.Ancestral.pas' {FrmSystemAncestral},
+  Frm.System.Message in '..\Source\Forms\System\Misc\Frm.System.Message.pas' {FrmSystemMessage},
+  Frm.System.Watcher in '..\Source\Forms\System\Misc\Frm.System.Watcher.pas' {FrmSystemWatcher},
+  Frm.System.Ancestral.Execute in '..\Source\Forms\System\Ancestral\Frm.System.Ancestral.Execute.pas' {FrmSystemAncestralExecute},
+  Frm.System.Engage in '..\Source\Forms\System\Misc\Frm.System.Engage.pas' {FrmSystemEngage},
+  App.Controller.AmazonCloud.Cognito in '..\Source\Units\Controller\App.Controller.AmazonCloud.Cognito.pas',
+  App.System.Manager.Company.Cloud in '..\Source\Units\System\Manager\App.System.Manager.Company.Cloud.pas',
+  Frm.System.Application.Enter in '..\Source\Forms\System\Application\Frm.System.Application.Enter.pas' {FrmSystemApplicationEnter},
+  Frm.Main in '..\Source\Forms\Frm.Main.pas' {FrmMain},
+  Frm.System.Ancestral.Cadastro in '..\Source\Forms\System\Ancestral\Frm.System.Ancestral.Cadastro.pas' {FrmSystemAncestralCadastro},
+  App.Controller.Usuario.LogOn in '..\Source\Units\Controller\App.Controller.Usuario.LogOn.pas',
+  App.Controller.Cadastro.Blocker in '..\Source\Units\Controller\App.Controller.Cadastro.Blocker.pas',
+  App.Objects.Entity.Blocker in '..\Source\Units\Objects\EntityFramework\App.Objects.Entity.Blocker.pas',
+  App.System.Manager.View in '..\Source\Units\System\Manager\App.System.Manager.View.pas';
+
+{$ENDREGION}
 
 {$R *.res}
 
+function IsAppAlreadyRunning(const AMutexName: UnicodeString): Boolean;
+var
+   LMutexHandle: THandle;
+   LErrorCode: DWORD;
 begin
-  Application.Initialize;
-  Application.MainFormOnTaskbar := True;
-  Application.CreateForm(TFrmSystemAncestral, FrmSystemAncestral);
+   LMutexHandle := CreateMutex(nil, True, PChar(AMutexName));
+   LErrorCode := GetLastError;
+
+   if (LMutexHandle <> 0) and (LErrorCode = ERROR_ALREADY_EXISTS) then
+   begin
+      CloseHandle(LMutexHandle);
+      Result := True;
+   end
+   else
+      Result := False;
+end;
+
+procedure ActivateExistingInstance;
+var
+   LWindowHandle: HWND;
+   LMessage: TMsg;
+begin
+   LWindowHandle := FindWindow(nil, 'ArchFlow');
+
+   if LWindowHandle <> 0 then
+   begin
+      if IsIconic(LWindowHandle) then
+         ShowWindow(LWindowHandle, SW_RESTORE);
+
+      SetForegroundWindow(LWindowHandle);
+
+      while PeekMessage(LMessage, 0, 0, 0, PM_REMOVE) do
+      begin
+         TranslateMessage(LMessage);
+         DispatchMessage(LMessage);
+      end;
+   end;
+end;
+
+const
+   UniqueMutexName = 'ArchFlow_SingleInstanceMutex';
+var
+   LEngage: TControllerEngage;
+begin
+   if IsAppAlreadyRunning(UniqueMutexName) then
+   begin
+      ActivateExistingInstance;
+      Halt;
+   end;
+
+   {$IFDEF DEBUG}
+   ReportMemoryLeaksOnShutdown := True;
+   {$ENDIF}
+
+   LEngage := TControllerEngage.Create;
+   try
+      if LEngage.Execute then
+      begin
+         Application.Initialize;
+         Application.CreateForm(TFrmMain, FrmMain);
   Application.CreateForm(TFrmSystemComponentAssistance, FrmSystemComponentAssistance);
-  Application.Run;
+  Application.MainFormOnTaskbar := True;
+         Application.Run;
+      end
+      else
+         Application.Terminate;
+   finally
+      LEngage.Destroy;
+   end;
 end.

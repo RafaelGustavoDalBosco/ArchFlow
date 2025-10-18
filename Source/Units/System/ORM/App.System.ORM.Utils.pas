@@ -34,7 +34,7 @@ type
       class function Delete_Record(const AObject: TObject): Boolean; static;
 
       /// <summary>
-      ///    Seleciona um registro no banco de dados
+      ///    Seleciona um registro no banco de dados através do seu ID
       /// </summary>
       /// <param name="AObject">
       ///    Objeto a ser persistido
@@ -53,6 +53,9 @@ type
       /// </param>
       class function List_Record(const AObject: TObject; const ASQL: UnicodeString = ''): TSystemList; static;
    end;
+
+var
+   ORMUtils: TORMUtils;
 
 implementation
 

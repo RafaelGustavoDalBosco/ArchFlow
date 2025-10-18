@@ -88,6 +88,7 @@
         <AppEnableRuntimeThemes>true</AppEnableRuntimeThemes>
         <AppDPIAwarenessMode>PerMonitorV2</AppDPIAwarenessMode>
         <VerInfo_IncludeVerInfo>true</VerInfo_IncludeVerInfo>
+        <DCC_DcuOutput>.\$(Platform)\$(Config)\DCU</DCC_DcuOutput>
     </PropertyGroup>
     <PropertyGroup Condition="'$(Cfg_2)'!=''">
         <DCC_LocalDebugSymbols>false</DCC_LocalDebugSymbols>
@@ -103,13 +104,8 @@
         <DelphiCompile Include="$(MainSource)">
             <MainSource>MainSource</MainSource>
         </DelphiCompile>
-        <DCCReference Include="..\Source\Forms\System\Frm.System.Ancestral.pas">
-            <Form>FrmSystemAncestral</Form>
-            <FormType>dfm</FormType>
-        </DCCReference>
         <DCCReference Include="..\Source\Forms\System\Frm.System.Component.Assistance.pas">
             <Form>FrmSystemComponentAssistance</Form>
-            <FormType>dfm</FormType>
         </DCCReference>
         <DCCReference Include="..\Source\Units\System\App.System.Types.pas"/>
         <DCCReference Include="..\Source\Units\Common\App.Common.Utils.pas"/>
@@ -144,7 +140,46 @@
         <DCCReference Include="..\Source\Units\Controller\App.Controller.Usuario.Access.pas"/>
         <DCCReference Include="..\Source\Units\System\ORM\App.System.ORM.Utils.pas"/>
         <DCCReference Include="..\Source\Units\System\Manager\App.System.Manager.Billing.pas"/>
-        <DCCReference Include="..\Source\Units\Controller\App.Controller.AmazonCloud.pas"/>
+        <DCCReference Include="..\Source\Units\Controller\App.Controller.AmazonCloud.S3.pas"/>
+        <DCCReference Include="..\Source\Units\Controller\App.Controller.Engage.pas"/>
+        <DCCReference Include="..\Source\Forms\System\Ancestral\Frm.System.Ancestral.pas">
+            <Form>FrmSystemAncestral</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\Source\Forms\System\Misc\Frm.System.Message.pas">
+            <Form>FrmSystemMessage</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\Source\Forms\System\Misc\Frm.System.Watcher.pas">
+            <Form>FrmSystemWatcher</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\Source\Forms\System\Ancestral\Frm.System.Ancestral.Execute.pas">
+            <Form>FrmSystemAncestralExecute</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\Source\Forms\System\Misc\Frm.System.Engage.pas">
+            <Form>FrmSystemEngage</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\Source\Units\Controller\App.Controller.AmazonCloud.Cognito.pas"/>
+        <DCCReference Include="..\Source\Units\System\Manager\App.System.Manager.Company.Cloud.pas"/>
+        <DCCReference Include="..\Source\Forms\System\Application\Frm.System.Application.Enter.pas">
+            <Form>FrmSystemApplicationEnter</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\Source\Forms\Frm.Main.pas">
+            <Form>FrmMain</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\Source\Forms\System\Ancestral\Frm.System.Ancestral.Cadastro.pas">
+            <Form>FrmSystemAncestralCadastro</Form>
+            <FormType>dfm</FormType>
+        </DCCReference>
+        <DCCReference Include="..\Source\Units\Controller\App.Controller.Usuario.LogOn.pas"/>
+        <DCCReference Include="..\Source\Units\Controller\App.Controller.Cadastro.Blocker.pas"/>
+        <DCCReference Include="..\Source\Units\Objects\EntityFramework\App.Objects.Entity.Blocker.pas"/>
+        <DCCReference Include="..\Source\Units\System\Manager\App.System.Manager.View.pas"/>
         <BuildConfiguration Include="Base">
             <Key>Base</Key>
         </BuildConfiguration>
@@ -166,6 +201,8 @@
                     <Source Name="MainSource">ArchFlow.dpr</Source>
                 </Source>
                 <Excluded_Packages>
+                    <Excluded_Packages Name="C:\Projetos\Componentes\Gnostice\PDFtoolkit VCL\Lib\RAD11\Win32\DCLgtPDFkitD11ProP.bpl">Gnostice PDFtoolkit</Excluded_Packages>
+                    <Excluded_Packages Name="C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\gtPDFkitD11ProP.bpl">File C:\Users\Public\Documents\Embarcadero\Studio\22.0\Bpl\gtPDFkitD11ProP.bpl not found</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dcloffice2k280.bpl">Microsoft Office 2000 Sample Automation Server Wrapper Components</Excluded_Packages>
                     <Excluded_Packages Name="$(BDSBIN)\dclofficexp280.bpl">Microsoft Office XP Sample Automation Server Wrapper Components</Excluded_Packages>
                 </Excluded_Packages>

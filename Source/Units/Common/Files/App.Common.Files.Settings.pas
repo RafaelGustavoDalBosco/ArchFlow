@@ -15,7 +15,7 @@ type
       /// <summary>
       ///    Carrega o arquivo de Settings e retorna no objeto [TApplicationSettings]
       /// </summary>
-      function Load: TApplicationSettings;
+      class function Load: TApplicationSettings; static;
 
       /// <summary>
       ///    Escreve no arquivo de Settings
@@ -23,7 +23,7 @@ type
       /// <param name="AAplicationSettings">
       ///    Objeto responsável pelas propriedades do Settings
       /// </param>
-      procedure Write(const AApplicationSettings: TApplicationSettings);
+      class procedure Write(const AApplicationSettings: TApplicationSettings); static;
    end;
 
 implementation
@@ -32,7 +32,7 @@ implementation
 
 uses App.Common.Utils;
 
-function TFileSettings.Load: TApplicationSettings;
+class function TFileSettings.Load: TApplicationSettings;
 var
    LXMLDoc: IXMLDocument;
    LRootNode, LNode: IXMLNode;
@@ -76,6 +76,10 @@ begin
             LConnection := TApplicationSettingsConnection.Create;
             LConnection.DataBaseName := VarConvUtils.VarToString(LNode.ChildNodes['DataBaseName'].NodeValue);
             LConnection.ServerPath := VarConvUtils.VarToString(LNode.ChildNodes['ServerPath'].NodeValue);
+            LConnection.ConnectionType := VarConvUtils.VarToInt(LNode.ChildNodes['ConnectionType'].NodeValue);
+            LConnection.DataBaseUser := VarConvUtils.VarToString(LNode.ChildNodes['DataBaseUser'].NodeValue);
+            LConnection.DataBasePassWord := StrUtils.DeCryptString(VarConvUtils.VarToString(LNode.ChildNodes['DataBasePassWord'].NodeValue));
+            LConnection.DataBasePort := VarConvUtils.VarToInt(LNode.ChildNodes['DataBasePort'].NodeValue);
 
             Result.Connection := LConnection;
          end;
@@ -87,6 +91,7 @@ begin
             LSystem := TApplicationSettingsSystem.Create;
             LSystem.DoNotUpdate := VarConvUtils.VarToBool(LNode.ChildNodes['DoNotUpdate'].NodeValue);
             LSystem.TraceDebug := VarConvUtils.VarToBool(LNode.ChildNodes['TraceDebug'].NodeValue);
+            LSystem.UseCloudLogin := VarConvUtils.VarToBool(LNode.ChildNodes['UseCloudLogin'].NodeValue);
 
             Result.System := LSystem;
          end;
@@ -96,7 +101,7 @@ begin
    end;
 end;
 
-procedure TFileSettings.Write(const AApplicationSettings: TApplicationSettings);
+class procedure TFileSettings.Write(const AApplicationSettings: TApplicationSettings);
 var
    LXMLDoc: IXMLDocument;
    LRootNode, LRootNodeSub: IXMLNode;
@@ -129,6 +134,10 @@ begin
       LRootNodeSub := WriteNode(LRootNode, 'Connection');
       WriteNode(LRootNodeSub, 'DataBaseName').NodeValue := AApplicationSettings.Connection.DataBaseName;
       WriteNode(LRootNodeSub, 'ServerPath').NodeValue := AApplicationSettings.Connection.ServerPath;
+      WriteNode(LRootNodeSub, 'ConnectionType').NodeValue := AApplicationSettings.Connection.ConnectionType;
+      WriteNode(LRootNodeSub, 'DataBaseUser').NodeValue := AApplicationSettings.Connection.DataBaseUser;
+      WriteNode(LRootNodeSub, 'DataBasePassWord').NodeValue := StrUtils.EnCryptString(AApplicationSettings.Connection.DataBasePassWord);
+      WriteNode(LRootNodeSub, 'DataBasePort').NodeValue := AApplicationSettings.Connection.DataBasePort;
 
       LRootNodeSub := WriteNode(LRootNode, 'Customize');
       WriteNode(LRootNodeSub, 'RememberUser').NodeValue := AApplicationSettings.Customize.RememberUser;
@@ -141,6 +150,7 @@ begin
       LRootNodeSub := WriteNode(LRootNode, 'System');
       WriteNode(LRootNodeSub, 'DoNotUpdate').NodeValue := AApplicationSettings.System.DoNotUpdate;
       WriteNode(LRootNodeSub, 'TraceDebug').NodeValue := AApplicationSettings.System.TraceDebug;
+      WriteNode(LRootNodeSub, 'UseCloudLogin').NodeValue := AApplicationSettings.System.UseCloudLogin;
 
       LXMLDoc.SaveToFile(PathUtils.ComputeFileSettingsPath);
    finally

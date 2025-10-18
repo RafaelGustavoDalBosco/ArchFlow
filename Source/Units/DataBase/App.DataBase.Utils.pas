@@ -2,8 +2,8 @@ unit App.DataBase.Utils;
 
 interface
 
-uses App.System.Connection.Query, App.System.SQL.Pattern, System.SysUtils,
-  App.System.ORM.Persistent;
+uses
+   App.System.Connection.Query, App.System.SQL.Pattern, System.SysUtils, App.System.ORM.Persistent;
 
 type
 

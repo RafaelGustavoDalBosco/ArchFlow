@@ -140,6 +140,8 @@ implementation
 
 { TORMPersistent }
 
+uses App.Common.Utils;
+
 procedure TORMPersistent.Commit_Transaction;
 begin
    if (not FIsTransactionOut) then
@@ -189,6 +191,11 @@ end;
 destructor TORMPersistent.Destroy;
 begin
    FreeAndNil(FExtract);
+   ObjUtils.Release_(FDataBaseRecord);
+
+   if (not FIsTransactionOut) then
+      ObjUtils.Release_(FTransaction);
+
    inherited Destroy;
 end;
 
@@ -253,16 +260,14 @@ end;
 
 function TORMPersistent.Insert: Boolean;
 var
-   LCommand: UnicodeString;
    LQuery: TQuery;
 begin
-   LCommand := GenerateCommandTextFrom_Type(toNew);
    LQuery := TQuery.Create;
    try
       if (not FIsTransactionOut) then
          FTransaction.Start;
 
-      LQuery.AddSQL(LCommand);
+      LQuery.AddSQL(GenerateCommandTextFrom_Type(toNew));
       FExtract.ExtractParamFromObjectTo_Query(LQuery, toNew);
 
       Result := LQuery.GetData;

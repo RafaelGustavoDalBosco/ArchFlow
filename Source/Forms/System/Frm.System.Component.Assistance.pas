@@ -6,24 +6,16 @@ uses
 
 {$REGION '| USES |'}
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, dxSkinsCore, dxSkinBasic, dxSkinBlack,
-  dxSkinBlue, dxSkinBlueprint, dxSkinCaramel, dxSkinCoffee, dxSkinDarkroom,
-  dxSkinDarkSide, dxSkinDevExpressDarkStyle, dxSkinDevExpressStyle, dxSkinFoggy,
-  dxSkinGlassOceans, dxSkinHighContrast, dxSkiniMaginary, dxSkinLilian,
-  dxSkinLiquidSky, dxSkinLondonLiquidSky, dxSkinMcSkin, dxSkinMetropolis,
-  dxSkinMetropolisDark, dxSkinMoneyTwins, dxSkinOffice2007Black,
-  dxSkinOffice2007Blue, dxSkinOffice2007Green, dxSkinOffice2007Pink,
-  dxSkinOffice2007Silver, dxSkinOffice2010Black, dxSkinOffice2010Blue,
-  dxSkinOffice2010Silver, dxSkinOffice2013DarkGray, dxSkinOffice2013LightGray,
-  dxSkinOffice2013White, dxSkinOffice2016Colorful, dxSkinOffice2016Dark,
-  dxSkinOffice2019Black, dxSkinOffice2019Colorful, dxSkinOffice2019DarkGray,
-  dxSkinOffice2019White, dxSkinPumpkin, dxSkinSeven, dxSkinSevenClassic,
-  dxSkinSharp, dxSkinSharpPlus, dxSkinSilver, dxSkinSpringtime, dxSkinStardust,
-  dxSkinSummer2008, dxSkinTheAsphaltWorld, dxSkinTheBezier,
-  dxSkinsDefaultPainters, dxSkinValentine, dxSkinVisualStudio2013Blue,
-  dxSkinVisualStudio2013Dark, dxSkinVisualStudio2013Light, dxSkinVS2010,
-  dxSkinWhiteprint, dxSkinXmas2008Blue, dxCore, cxClasses, cxLookAndFeels,
-  dxSkinsForm, Vcl.AppEvnts;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, dxSkinsCore, dxSkinBasic,  dxCore, cxClasses, cxLookAndFeels,
+  dxSkinsForm, Vcl.AppEvnts, dxSkinWXI, dxSkinWhiteprint, System.ImageList,
+  Vcl.ImgList, cxImageList, cxGraphics, cxControls, cxLookAndFeelPainters,
+  cxGeometry, dxFramedControl, cxContainer, cxEdit, dxActivityIndicator,
+  dxGDIPlusClasses, cxImage, cxLabel, dxPanel, dxCalloutPopup, dxUIAdorners,
+  FireDAC.UI.Intf, FireDAC.VCLUI.Wait, FireDAC.Stan.Intf, FireDAC.Comp.UI,
+  Vcl.ExtCtrls, dxSpellCheckerCore, dxSpellChecker, cxLocalization, dxScreenTip,
+  dxCustomHint, cxHint, FireDAC.Phys.PGDef, FireDAC.Phys, FireDAC.Phys.PG,
+  dxHunspellTypes, dxHunspellDictionary,
+  dxorgced, dxorgchr, dxTaskbarProgress, cxInplaceContainer, cxVGrid;
 {$ENDREGION}
 
 type
@@ -31,11 +23,41 @@ type
    TFrmSystemComponentAssistance = class(TForm)
       dxSkinController: TdxSkinController;
       ApplicationEvents: TApplicationEvents;
-    procedure ApplicationEventsException(Sender: TObject; E: Exception);
+      cxImageList16: TcxImageList;
+      DxCalloutPopup: TdxCalloutPopup;
+      DxPanelCallOutSucess: TdxPanel;
+      LblCallOutSucess: TcxLabel;
+      CxImgCallOutSucess: TcxImage;
+      DxPanelCallOutWaitAndSucess: TdxPanel;
+      dxActivityIndicatorCallOut: TdxActivityIndicator;
+      LblCallOutWaitAndSucess: TcxLabel;
+      CxImgCallOutWaitAndSucess: TcxImage;
+      DxPanelCallOutWarning: TdxPanel;
+      LblCallOutWarning: TcxLabel;
+      CxImgWarn: TcxImage;
+      dxUIAdornerManager: TdxUIAdornerManager;
+      AdornerGuide: TdxGuide;
+      FDGUIxWaitCursor: TFDGUIxWaitCursor;
+      TimerCallOutPopUp: TTimer;
+      dxSpellChecker: TdxSpellChecker;
+      cxLocalizer: TcxLocalizer;
+      HintController: TcxHintStyleController;
+      FDPhysPgDriverLink: TFDPhysPgDriverLink;
+      cxImageList32: TcxImageList;
+      procedure ApplicationEventsException(Sender: TObject; E: Exception);
+      procedure TimerCallOutPopUpTimer(Sender: TObject);
+      procedure FormCreate(Sender: TObject);
    private
-      { Private declarations }
+      /// <summary>
+      ///    Carrega os arquivos do SpellChecker
+      /// </summary>
+      procedure Load_SpellChecker_Files;
+
+      /// <summary>
+      ///    Carrega o arquivo de tradução dos componentes da devexpress
+      /// </summary>
+      procedure Load_Tradution_File;
    public
-      { Public declarations }
    end;
 
 var
@@ -45,11 +67,53 @@ implementation
 
 {$R *.dfm}
 
-uses App.Common.Utils;
+uses App.Common.Utils, App.System.Vars;
 
 procedure TFrmSystemComponentAssistance.ApplicationEventsException(Sender: TObject; E: Exception);
 begin
    LogUtils.Write('Exception Raised', E.Message);
+   MessageUtils.Show_Error(E.Message);
+end;
+
+procedure TFrmSystemComponentAssistance.FormCreate(Sender: TObject);
+begin
+   Load_SpellChecker_Files;
+   Load_Tradution_File;
+end;
+
+procedure TFrmSystemComponentAssistance.Load_SpellChecker_Files;
+var
+   LInstance: TdxHunspellDictionary;
+begin
+   if (gvSettings.Customize.DisableSpellChecker) or
+      (not FileUtils.Exists(gvFiles.SpellChecker_Aff_File)) or
+      (not FileUtils.Exists(gvFiles.SpellChecker_Dic_File)) then
+      Exit;
+
+   LInstance := TdxHunspellDictionary(dxSpellChecker.Dictionaries[0]);
+   LInstance.DictionaryPath := gvFiles.SpellChecker_Dic_File;
+   LInstance.GrammarPath := gvFiles.SpellChecker_Aff_File;
+   LInstance.Load;
+end;
+
+procedure TFrmSystemComponentAssistance.Load_Tradution_File;
+var
+   LFileTradution: UnicodeString;
+begin
+   LFileTradution := gvFiles.Tradution_DevExpress_File;
+
+   if FileUtils.Exists(LFileTradution) then
+   begin
+      cxLocalizer.FileName := LFileTradution;
+      cxLocalizer.Active := True;
+      cxLocalizer.Locale := 1046;
+   end;
+end;
+
+procedure TFrmSystemComponentAssistance.TimerCallOutPopUpTimer(Sender: TObject);
+begin
+   DxCallOutPopup.Close;
+   TimerCallOutPopUp.Enabled := False;
 end;
 
 end.

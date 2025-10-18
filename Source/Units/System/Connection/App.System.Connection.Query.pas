@@ -7,6 +7,7 @@ uses
 {$REGION '| FIREDAC |'}
    FireDAC.Comp.Client,
    FireDAC.Stan.Param,
+   FireDAC.Stan.Error,
 {$ENDREGION}
 
 {$REGION '| VCL |'}
@@ -369,8 +370,8 @@ begin
 
    FFDQuery.SQL.Add(ASQL);
 
-   if gvTraceDebug then
-      LogUtils.Write('TraceDebug', ASQL);
+   if (gvSettings.System.TraceDebug) then
+      LogUtils.Write('TraceDebug<SQL>', ASQL);
 end;
 
 procedure TQuery.AppendSQL(const ASQL: UnicodeString);
@@ -466,7 +467,7 @@ begin
 
       CommitTransaction;
    except
-      on E: Exception do
+      on E: EFDDBEngineException do
       begin
          RollBackTransaction;
          raise Exception.CreateFmt('TQuery.Execute Exception! SQL: %s' + sLineBreak + 'Erro: %s', [GetSQLText, E.Message]);
@@ -483,7 +484,7 @@ begin
 
       Result := (FFDQuery.RowsAffected > 0);
    except
-      on E: Exception do
+      on E: EFDDBEngineException do
       begin
          RollBackTransaction;
          raise Exception.CreateFmt('TQuery.ExecuteWithTransaction Exception! SQL: %s' + sLineBreak + 'Erro: %s', [GetSQLText, E.Message]);

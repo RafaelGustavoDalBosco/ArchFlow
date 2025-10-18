@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Settings>
+	<Connection>
+		<DataBaseName>archflow</DataBaseName>
+		<ServerPath>127.0.0.1</ServerPath>
+		<ConnectionType>1</ConnectionType>
+		<DataBaseUser>postgres</DataBaseUser>
+		<DataBasePassWord>534e505746514652</DataBasePassWord>
+		<DataBasePort>5432</DataBasePort>
+	</Connection>
+	<Customize>
+		<RememberUser>false</RememberUser>
+		<UserNameDefault></UserNameDefault>
+		<UseKeyEscapeToLeave>false</UseKeyEscapeToLeave>
+		<ShowConfirmMessage>false</ShowConfirmMessage>
+		<DisableWeather>false</DisableWeather>
+		<DisableSpellChecker>false</DisableSpellChecker>
+	</Customize>
+	<System>
+		<DoNotUpdate>false</DoNotUpdate>
+		<TraceDebug>false</TraceDebug>
+		<UseCloudLogin>false</UseCloudLogin>
+	</System>
+</Settings>

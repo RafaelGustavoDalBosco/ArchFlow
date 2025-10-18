@@ -18,35 +18,31 @@ type
       FCommon: UnicodeString;
       FTemp: UnicodeString;
       FDownload: UnicodeString;
-      procedure SetCommon(const Value: UnicodeString);
-      procedure SetFiles(const Value: UnicodeString);
-      procedure SetHTML(const Value: UnicodeString);
-      procedure SetImagens(const Value: UnicodeString);
-      procedure SetJSON(const Value: UnicodeString);
-      procedure SetLog(const Value: UnicodeString);
-      procedure SetSystem(const Value: UnicodeString);
-      procedure SetTemp(const Value: UnicodeString);
-      procedure SetDownload(const Value: UnicodeString);
-
-      function GetSystem: UnicodeString;
-      function GetCommon: UnicodeString;
-      function GetFiles: UnicodeString;
-      function GetImagens: UnicodeString;
-      function GetHTML: UnicodeString;
-      function GetLog: UnicodeString;
-      function GetJSON: UnicodeString;
-      function GetTemp: UnicodeString;
-      function GetDownLoad: UnicodeString;
    public
-      property System: UnicodeString read GetSystem write SetSystem;
-      property Common: UnicodeString read GetCommon write SetCommon;
-      property Files: UnicodeString read GetFiles write SetFiles;
-      property Temp: UnicodeString read GetTemp write SetTemp;
-      property Imagens: UnicodeString read GetImagens write SetImagens;
-      property HTML: UnicodeString read GetHTML write SetHTML;
-      property Log: UnicodeString read GetLog write SetLog;
-      property JSON: UnicodeString read GetJSON write SetJSON;
-      property Download: UnicodeString read GetDownload write SetDownload;
+      property System: UnicodeString read FSystem;
+      property Common: UnicodeString read FCommon;
+      property Files: UnicodeString read FFiles;
+      property Temp: UnicodeString read FTemp;
+      property Imagens: UnicodeString read FImagens;
+      property HTML: UnicodeString read FHTML;
+      property Log: UnicodeString read FLog;
+      property JSON: UnicodeString read FJSON;
+      property Download: UnicodeString read FDownload;
+
+      constructor Create; overload;
+   end;
+
+   TApplicationFiles = class
+   strict private
+      FSpellChecker_Dic_File: UnicodeString;
+      FSpellChecker_Aff_File: UnicodeString;
+      FTradution_DevExpress_File: UnicodeString;
+   public
+      property SpellChecker_Dic_File: UnicodeString read FSpellChecker_Dic_File;
+      property SpellChecker_Aff_File: UnicodeString read FSpellChecker_Aff_File;
+      property Tradution_DevExpress_File: UnicodeString read FTradution_DevExpress_File;
+
+      constructor Create; overload;
    end;
 
    TApplicationSettingsCustomize = class
@@ -76,22 +72,37 @@ type
    strict private
       FDoNotUpdate: Boolean;
       FTraceDebug: Boolean;
+      FUseCloudLogin: Boolean;
+      procedure SetUseCloudLogin(const Value: Boolean);
       procedure SetTraceDebug(const Value: Boolean);
       procedure SetDoNotUpdate(const Value: Boolean);
    public
       property DoNotUpdate: Boolean read FDoNotUpdate write SetDoNotUpdate;
       property TraceDebug: Boolean read FTraceDebug write SetTraceDebug;
+      property UseCloudLogin: Boolean read FUseCloudLogin write SetUseCloudLogin;
    end;
 
    TApplicationSettingsConnection = class
    strict private
       FDataBaseName: UnicodeString;
       FServerPath: UnicodeString;
+      FConnectionType: ShortInt;
+      FDataBasePort: SmallInt;
+      FDataBasePassWord: UnicodeString;
+      FDataBaseUser: UnicodeString;
+      procedure SetDataBasePassWord(const Value: UnicodeString);
+      procedure SetDataBasePort(const Value: SmallInt);
+      procedure SetDataBaseUser(const Value: UnicodeString);
+      procedure SetConnectionType(const Value: ShortInt);
       procedure SetDataBaseName(const Value: UnicodeString);
       procedure SetServerPath(const Value: UnicodeString);
    public
       property DataBaseName: UnicodeString read FDataBaseName write SetDataBaseName;
       property ServerPath: UnicodeString read FServerPath write SetServerPath;
+      property ConnectionType: ShortInt read FConnectionType write SetConnectionType;
+      property DataBaseUser: UnicodeString read FDataBaseUser write SetDataBaseUser;
+      property DataBasePassWord: UnicodeString read FDataBasePassWord write SetDataBasePassWord;
+      property DataBasePort: SmallInt read FDataBasePort write SetDataBasePort;
    end;
 
    TApplicationSettings = class
@@ -227,15 +238,61 @@ type
       property Extension: UnicodeString read FExtension write SetExtension;
    end;
 
+   TCompanyCloud = class
+   strict private
+      FDataBase_PassWord: UnicodeString;
+      FDataBase_User: UnicodeString;
+      FDataBase_Name: UnicodeString;
+      FPort: SmallInt;
+      FServer: UnicodeString;
+      FExpiration_Date: TDateTime;
+      FRazaoSocial: UnicodeString;
+      procedure SetRazaoSocial(const Value: UnicodeString);
+      procedure SetExpiration_Date(const Value: TDateTime);
+      procedure SetDataBase_Name(const Value: UnicodeString);
+      procedure SetDataBase_PassWord(const Value: UnicodeString);
+      procedure SetDataBase_User(const Value: UnicodeString);
+      procedure SetPort(const Value: SmallInt);
+      procedure SetServer(const Value: UnicodeString);
+   public
+      property DataBase_Name: UnicodeString read FDataBase_Name write SetDataBase_Name;
+      property Server: UnicodeString read FServer write SetServer;
+      property Port: SmallInt read FPort write SetPort;
+      property DataBase_User: UnicodeString read FDataBase_User write SetDataBase_User;
+      property DataBase_PassWord: UnicodeString read FDataBase_PassWord write SetDataBase_PassWord;
+      property Expiration_Date: TDateTime read FExpiration_Date write SetExpiration_Date;
+      property RazaoSocial: UnicodeString read FRazaoSocial write SetRazaoSocial;
+   end;
+
 implementation
 
 { TAppSettingsConnection }
 
-uses App.Common.Utils;
+uses App.Common.Utils, App.System.Vars, App.System.Consts;
+
+procedure TApplicationSettingsConnection.SetConnectionType(const Value: ShortInt);
+begin
+   FConnectionType := Value;
+end;
 
 procedure TApplicationSettingsConnection.SetDataBaseName(const Value: UnicodeString);
 begin
    FDataBaseName := Value;
+end;
+
+procedure TApplicationSettingsConnection.SetDataBasePassWord(const Value: UnicodeString);
+begin
+   FDataBasePassWord := Value;
+end;
+
+procedure TApplicationSettingsConnection.SetDataBasePort(const Value: SmallInt);
+begin
+   FDataBasePort := Value;
+end;
+
+procedure TApplicationSettingsConnection.SetDataBaseUser(const Value: UnicodeString);
+begin
+   FDataBaseUser := Value;
 end;
 
 procedure TApplicationSettingsConnection.SetServerPath(const Value: UnicodeString);
@@ -278,112 +335,27 @@ end;
 
 { TApplicationDirectorys }
 
-function TApplicationDirectorys.GetCommon: UnicodeString;
-begin
-   FCommon := PathUtils.GetApplicationPath + 'Common';
-   Result := FCommon;
-end;
-
-function TApplicationDirectorys.GetDownLoad: UnicodeString;
-begin
-   FDownload := Files + '\Download';
-   Result := FDownload;
-end;
-
-function TApplicationDirectorys.GetFiles: UnicodeString;
-begin
-   FFiles := FCommon + '\Files';
-   Result := FFiles;
-end;
-
-function TApplicationDirectorys.GetHTML: UnicodeString;
-begin
-   FHTML := FFiles + '\HTML';
-   Result := FHTML;
-end;
-
-function TApplicationDirectorys.GetImagens: UnicodeString;
-begin
-   FImagens := FFiles + '\Imagens';
-   Result := FImagens;
-end;
-
-function TApplicationDirectorys.GetJSON: UnicodeString;
-begin
-   FJSON := FFiles + '\JSON';
-   Result := FJSON;
-end;
-
-function TApplicationDirectorys.GetLog: UnicodeString;
-begin
-   FLog := FFiles + '\Log';
-   Result := FLog;
-end;
-
-function TApplicationDirectorys.GetSystem: UnicodeString;
+constructor TApplicationDirectorys.Create;
 begin
    FSystem := PathUtils.GetApplicationPath + 'System';
-   Result := FSystem;
-end;
-
-function TApplicationDirectorys.GetTemp: UnicodeString;
-begin
+   FCommon := PathUtils.GetApplicationPath + 'Common';
+   FFiles := FCommon + '\Files';
+   FDownload := FFiles + '\Download';
+   FHTML := FFiles + '\HTML';
+   FImagens := FFiles + '\Imagens';
+   FJSON := FFiles + '\JSON';
+   FLog := FFiles + '\Log';
    FTemp := FFiles + '\Temp';
-   Result := FTemp;
-end;
-
-procedure TApplicationDirectorys.SetCommon(const Value: UnicodeString);
-begin
-   FCommon := Value;
-end;
-
-procedure TApplicationDirectorys.SetDownload(const Value: UnicodeString);
-begin
-   FDownload := Value;
-end;
-
-procedure TApplicationDirectorys.SetFiles(const Value: UnicodeString);
-begin
-   FFiles := Value;
-end;
-
-procedure TApplicationDirectorys.SetHTML(const Value: UnicodeString);
-begin
-   FHTML := Value;
-end;
-
-procedure TApplicationDirectorys.SetImagens(const Value: UnicodeString);
-begin
-   FImagens := Value;
-end;
-
-procedure TApplicationDirectorys.SetJSON(const Value: UnicodeString);
-begin
-   FJSON := Value;
-end;
-
-procedure TApplicationDirectorys.SetLog(const Value: UnicodeString);
-begin
-   FLog := Value;
-end;
-
-procedure TApplicationDirectorys.SetSystem(const Value: UnicodeString);
-begin
-   FSystem := Value;
-end;
-
-procedure TApplicationDirectorys.SetTemp(const Value: UnicodeString);
-begin
-   FTemp := Value;
+   inherited Create;
 end;
 
 { TApplicationSettings }
 
 destructor TApplicationSettings.Destroy;
 begin
-//   AppObject.CheckAndFreeObject(FConnection);
-//   AppObject.CheckAndFreeObject(FCustomize);
-//   AppObject.CheckAndFreeObject(FSystem);
+   FConnection.Destroy;
+   FCustomize.Destroy;
+   FSystem.Destroy;
    inherited Destroy;
 end;
 
@@ -530,6 +502,11 @@ begin
    FTraceDebug := Value;
 end;
 
+procedure TApplicationSettingsSystem.SetUseCloudLogin(const Value: Boolean);
+begin
+   FUseCloudLogin := Value;
+end;
+
 { TFileGoogleDrive }
 
 procedure TFileGoogleDrive.SetExtension(const Value: UnicodeString);
@@ -607,6 +584,53 @@ end;
 procedure TWeatherLocation.SetWindSpeed(const Value: Currency);
 begin
    FWindSpeed := Value;
+end;
+
+{ TCompanyCloud }
+
+procedure TCompanyCloud.SetDataBase_Name(const Value: UnicodeString);
+begin
+   FDataBase_Name := Value;
+end;
+
+procedure TCompanyCloud.SetDataBase_PassWord(const Value: UnicodeString);
+begin
+   FDataBase_PassWord := Value;
+end;
+
+procedure TCompanyCloud.SetDataBase_User(const Value: UnicodeString);
+begin
+   FDataBase_User := Value;
+end;
+
+procedure TCompanyCloud.SetExpiration_Date(const Value: TDateTime);
+begin
+   FExpiration_Date := Value;
+end;
+
+procedure TCompanyCloud.SetPort(const Value: SmallInt);
+begin
+   FPort := Value;
+end;
+
+procedure TCompanyCloud.SetRazaoSocial(const Value: UnicodeString);
+begin
+   FRazaoSocial := Value;
+end;
+
+procedure TCompanyCloud.SetServer(const Value: UnicodeString);
+begin
+   FServer := Value;
+end;
+
+{ TApplicationFiles }
+
+constructor TApplicationFiles.Create;
+begin
+   FSpellChecker_Dic_File := gvDirectories.Files + '\' + SName_SpellChecker_DicFile;
+   FSpellChecker_Aff_File := gvDirectories.Files + '\' + SName_SpellChecker_AffFile;
+   FTradution_DevExpress_File := gvDirectories.Files + '\' + SName_Tradution_File;
+   inherited Create;
 end;
 
 end.

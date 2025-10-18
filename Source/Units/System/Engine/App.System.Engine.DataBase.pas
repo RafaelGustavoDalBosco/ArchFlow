@@ -142,6 +142,11 @@ type
       function TryGetForeignKeyFrom_Field(const AList: TSystemList; const AFieldName: UnicodeString): TDataBaseForeignKey;
    strict protected
       /// <summary>
+      ///    Atualiza o campo VERSION da tabela TAPPLICATIONDATA
+      /// </summary>
+      procedure Update_Application_Data;
+
+      /// <summary>
       ///    Update.Relations
       /// </summary>
       procedure Update_Relations;
@@ -242,6 +247,7 @@ type
       procedure SetVersionDataBase(const Value: UnicodeString);
 
       function GetTypeOperation: TTypeOperationDataBase;
+      function GetVersionDataBase: UnicodeString;
    protected
       /// <summary>
       ///    Create.Structure
@@ -300,14 +306,14 @@ var
    LVersionDB, LVersionApp: TVersionInformation;
    LValueDB, LValueApp: Int64;
 begin
-//   if (not AppDBRelations.TableExists(cTableApplicationInformation)) then
-//   begin
-//      FTypeEngineDataBase := tedbNew;
-//      Exit(FTypeEngineDataBase);
-//   end;
+   if (not RelationUtils.Table_InSchemaDB(STable_Application_Data)) then
+   begin
+      FTypeOperation := todNew;
+      Exit(FTypeOperation);
+   end;
 
-//   VersionDataBase := AppVersion.GetDataBaseVersion;
-//   VersionApplication := AppVersion.GetApplicationVersion;
+   VersionDataBase := GetVersionDataBase;
+   VersionApplication := VersionUtils.GetApplication_Version;
 
    // -> Decode.DBVersion
    VersionUtils.Decode(LVersionDB.Major, LVersionDB.Minor, LVersionDB.Release, LVersionDB.Build, VersionDataBase);
@@ -330,6 +336,23 @@ begin
       FTypeOperation := todNone;
 
    Result := FTypeOperation;
+end;
+
+function TSystemEngineDataBase.GetVersionDataBase: UnicodeString;
+var
+   LApplicationData: TApplicationData;
+begin
+   LApplicationData := TApplicationData.Create;
+   try
+      LApplicationData.Id := 1;
+
+      if ORMUtils.Select_Record(LApplicationData) then
+         Result := LApplicationData.Version
+      else
+         Result := '0.0.0.0';
+   finally
+      FreeAndNil(LApplicationData);
+   end;
 end;
 
 procedure TSystemEngineDataBase.SetTypeOperation(const Value: TTypeOperationDataBase);
@@ -623,6 +646,21 @@ begin
    ExecuteSQL(AppSQLPatternDB.UpdateDecimalsField(AFieldDataBase.Name, ATableName, AFieldDataBase.Length, AFieldDataBase.Decimals));
 end;
 
+procedure TSystemEngineDataBaseUpdate.Update_Application_Data;
+var
+   LApplication: TApplicationData;
+begin
+   LApplication := TApplicationData.Create;
+   try
+      LApplication.Id := 1;
+      LApplication.Version := VersionUtils.GetApplication_Version;
+      LApplication.LastUpdatedDate := Now;
+      ORMUtils.Edit_Record(LApplication);
+   finally
+      FreeAndNil(LApplication);
+   end;
+end;
+
 procedure TSystemEngineDataBaseUpdate.Update_Fields(const ADataBaseTable: TDataBaseTable);
 var
    LListTable, LListObject, LListFK: TSystemList;
@@ -650,30 +688,20 @@ begin
 
                LForeignKey := TryGetForeignKeyFrom_Field(LListFK, LFieldObject.Name);
 
+               if (LForeignKey <> nil) then
+                  Drop_ForeignKey(LForeignKey);
+
                if (LFieldObject.TypeText <> LFieldTable.TypeText) or (LFieldObject.PrimaryKey <> LFieldTable.PrimaryKey) then
                begin
-                   if (LForeignKey <> nil) then
-                     Drop_ForeignKey(LForeignKey);
-
                   Drop_Field(ADataBaseTable.Name, LFieldObject.Name);
                   Create_Field(ADataBaseTable.Name, LFieldObject);
                end;
 
                if (LFieldObject.NotNull <> LFieldTable.NotNull) then
-               begin
-                  if (LForeignKey <> nil) then
-                     Drop_ForeignKey(LForeignKey);
-
                   UpdateNullFlag_Field(LFieldObject.NotNull, ADataBaseTable.Name, LFieldObject.Name);
-               end;
 
                if (LFieldObject.Length <> LFieldTable.Length) then
-               begin
-                  if (LForeignKey <> nil) then
-                     Drop_ForeignKey(LForeignKey);
-
                   UpdateLength_Field(LFieldObject, ADataBaseTable.Name);
-               end;
 
                if (LFieldObject.Decimals <> LFieldTable.Decimals) then
                   UpdateDecimals_Field(LFieldObject, ADataBaseTable.Name);
@@ -891,7 +919,7 @@ var
    LExtract: TExtract;
    LDataBaseTable: TDataBaseTable;
 begin
-  // AppWatcher.Show('Criando estrutura de tabelas', gvEntitys.Count);
+   WatcherUtils.Show_Watcher('Criando estrutura de tabelas', tswNormal, gvRegistry.Count);
    try
       for LEntity in gvRegistry do
       begin
@@ -901,7 +929,7 @@ begin
 
             if (LDataBaseTable = nil) then
             begin
-              // AppWatcher.IncProgress;
+               WatcherUtils.Inc_Progress;
                Continue;
             end;
 
@@ -916,10 +944,10 @@ begin
             FreeAndNil(LExtract);
          end;
 
-        // AppWatcher.IncProgress;
+         WatcherUtils.Inc_Progress;
       end;
    finally
-      //AppWatcher.Close;
+      WatcherUtils.Close;
    end;
 end;
 
@@ -931,14 +959,11 @@ end;
 procedure TSystemEngineDataBaseCreate.Execute;
 begin
    Transaction.Start;
-   try
-      Create_Relations;
-      Create_ForeignKeys;
-      Create_Functions;
-      Create_Triggers;
-   finally
-      Transaction.Commit;
-   end;
+   Create_Relations;
+   Create_ForeignKeys;
+   Create_Functions;
+   Create_Triggers;
+   Transaction.Commit;
 
    New_ApplicationData;
    New_Empresa;
@@ -954,9 +979,9 @@ begin
       LApplication.Version := VersionUtils.GetApplication_Version;
       LApplication.LastUpdatedDate := Now;
       LApplication.ExpirationDate := StrToDate('31/12/2099');
-      LApplication.GoogleWorkSpace := True;
+      LApplication.GoogleWorkSpace := False;
 
-
+      ORMUtils.New_Record(LApplication);
    finally
       FreeAndNil(LApplication);
    end;

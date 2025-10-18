@@ -19,6 +19,21 @@ type
    /// </summary>
    TTypeOperationDataBase = (todNone, todNew, todUpdate, todWrongVersion);
 
+   /// <summary>
+   ///    Type: Result Action [None, Confirmado, Cancelado]
+   /// </summary>
+   TTypeResultAction = (traNone, traConfirmed, traCanceled);
+
+   /// <summary>
+   ///   Type: Messsage [None, Info, Warning, Sucess, Error, tmQuestion]
+   /// </summary>
+   TTypeMessage = (tmNone, tmInfo, tmWarning, tmSucess, tmError, tmQuestion);
+
+   /// <summary>
+   ///    Type: ShowHint [Information, Warning, Error]
+   /// </summary>
+   TTypeShowHint = (tshInformation, tshWarning, tshError);
+
 implementation
 
 end.

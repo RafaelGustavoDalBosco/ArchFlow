@@ -78,7 +78,10 @@ type
       /// <summary>
       ///    Inclui os parâmetros de conexão, no objeto do TFDConnection
       /// </summary>
-      procedure IncludeParamsOnConnection;
+      /// <param name="AIncludeDataBaseName">
+      ///    Caso não seja para incluir o nome do banco de dados na conexão, é usado este parâmetro
+      /// </param>
+      procedure IncludeParamsOnConnection(const AIncludeDataBaseName: Boolean = True);
 
       /// <summary>
       ///    Tenta se conectar o banco de dados
@@ -167,7 +170,7 @@ begin
       Result := nil;
 end;
 
-procedure TConnection.IncludeParamsOnConnection;
+procedure TConnection.IncludeParamsOnConnection(const AIncludeDataBaseName: Boolean);
 begin
    FDConnection.DriverName := Params.DriverName;
    FDConnection.LoginPrompt := Params.LoginPrompt;
@@ -176,7 +179,11 @@ begin
    FDConnection.Params.Values['server'] := Params.Server;
    FDConnection.Params.Values['port'] := Params.Port.ToString;
    FDConnection.Params.Values['characterSet'] := Params.CharacterSet;
-   FDConnection.Params.Values['database'] := Params.DataBasePath;
+
+   if (AIncludeDataBaseName) then
+      FDConnection.Params.Values['database'] := Params.DataBasePath
+   else
+      FDConnection.Params.Values['database'] := 'postgres'
 end;
 
 procedure TConnection.SetFDConnection(const Value: TFDConnection);

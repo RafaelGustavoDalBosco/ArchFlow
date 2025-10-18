@@ -8,7 +8,7 @@ uses
 type
 
    [TTable(STable_Application_Data, STable_ApplicationData_Comment)]
-   TApplicationData = class
+   TApplicationData = class(TEntity)
    strict private
       FVersion: UnicodeString;
       FExpirationDate: TDate;
