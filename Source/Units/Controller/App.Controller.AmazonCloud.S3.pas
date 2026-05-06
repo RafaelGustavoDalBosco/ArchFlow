@@ -94,8 +94,8 @@ begin
    SetDeleteCurrentFile(ADeleteCurrentFile);
 
    AmazonConnectionInfo := TAmazonConnectionInfo.Create(nil);
-   AmazonConnectionInfo.AccountName := 'AKIAYM7POEM76QBFCPSW';
-   AmazonConnectionInfo.AccountKey := 'GWudT+onC8NmNmby2vudrP1Pm/6IilYXhyJ2xOUX';
+   AmazonConnectionInfo.AccountName := '';
+   AmazonConnectionInfo.AccountKey := '';
    AmazonConnectionInfo.Region := amzrSAEast1;
    AmazonConnectionInfo.UseDefaultEndpoints := False;
    AmazonConnectionInfo.AutoDetectBucketRegion := True;

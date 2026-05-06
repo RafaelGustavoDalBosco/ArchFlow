@@ -1,4 +1,4 @@
-program ArchFlow;
+program Hope;
 
 uses
   {$REGION}
@@ -82,7 +82,7 @@ var
    LWindowHandle: HWND;
    LMessage: TMsg;
 begin
-   LWindowHandle := FindWindow(nil, 'ArchFlow');
+   LWindowHandle := FindWindow(nil, 'Hope');
 
    if LWindowHandle <> 0 then
    begin
@@ -100,7 +100,7 @@ begin
 end;
 
 const
-   UniqueMutexName = 'ArchFlow_SingleInstanceMutex';
+   UniqueMutexName = 'Hope_SingleInstanceMutex';
 var
    LEngage: TControllerEngage;
 begin
@@ -120,8 +120,8 @@ begin
       begin
          Application.Initialize;
          Application.CreateForm(TFrmMain, FrmMain);
-  Application.CreateForm(TFrmSystemComponentAssistance, FrmSystemComponentAssistance);
-  Application.MainFormOnTaskbar := True;
+         Application.CreateForm(TFrmSystemComponentAssistance, FrmSystemComponentAssistance);
+         Application.MainFormOnTaskbar := True;
          Application.Run;
       end
       else

@@ -103,6 +103,7 @@ inherited FrmSystemEngage: TFrmSystemEngage
         StyleReadOnly.LookAndFeel.NativeStyle = False
         TabOrder = 0
         TextHint = '< endere'#231'o do banco de dados >'
+        ExplicitHeight = 21
         Width = 247
       end
     end
@@ -148,6 +149,7 @@ inherited FrmSystemEngage: TFrmSystemEngage
         StyleReadOnly.LookAndFeel.NativeStyle = False
         TabOrder = 0
         TextHint = '< nome do banco de dados >'
+        ExplicitHeight = 21
         Width = 205
       end
     end
@@ -177,6 +179,7 @@ inherited FrmSystemEngage: TFrmSystemEngage
         Align = alLeft
         Properties.MaskKind = emkRegExprEx
         TabOrder = 0
+        ExplicitHeight = 21
         Width = 157
       end
       object BtDownloadFromServer: TcxButton
@@ -286,6 +289,7 @@ inherited FrmSystemEngage: TFrmSystemEngage
         Properties.MinValue = 5432.000000000000000000
         TabOrder = 0
         Value = 5432
+        ExplicitHeight = 21
         Width = 57
       end
     end

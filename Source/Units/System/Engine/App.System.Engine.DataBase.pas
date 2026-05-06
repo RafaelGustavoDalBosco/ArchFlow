@@ -814,7 +814,7 @@ var
    LExtract: TExtract;
    LDataBaseTable: TDataBaseTable;
 begin
-  // AppWatcher.Show('Atualizando a estrutura das tabelas', gvEntitys.Count);
+   WatcherUtils.Show_Watcher('Atualizando a estrutura das tabelas', tswNormal, gvRegistry.Count);
    try
       for LEntity in gvRegistry do
       begin
@@ -824,7 +824,7 @@ begin
 
             if (LDataBaseTable = nil) then
             begin
-//               AppWatcher.IncProgress;
+               WatcherUtils.Inc_Progress;
                FreeAndNil(LExtract);
                Continue;
             end;
@@ -846,10 +846,10 @@ begin
             FreeAndNil(LExtract);
          end;
 
-//         AppWatcher.IncProgress;
+         WatcherUtils.Inc_Progress;
       end;
    finally
-//      AppWatcher.Close;
+      WatcherUtils.Close;
    end;
 end;
 
@@ -964,7 +964,6 @@ begin
    Create_Functions;
    Create_Triggers;
    Transaction.Commit;
-
    New_ApplicationData;
    New_Empresa;
    New_Usuario;
@@ -993,7 +992,7 @@ var
 begin
    LEmpresa := TEmpresa.Create;
    try
-      LEmpresa.RazaoSocial := 'ArchFlow';
+      LEmpresa.RazaoSocial := 'Hope';
       LEmpresa.Active := True;
       LEmpresa.CpfCnpj := '00000000000000';
       LEmpresa.TipoPessoa := 1;

@@ -142,7 +142,7 @@ begin
    if (TypeConnection = tcLocal) then
    begin
       EdtServerPath.Text := '127.0.0.1';
-      EdtNameDataBase.Text := 'archflow';
+      EdtNameDataBase.Text := 'hope';
    end;
 end;
 
